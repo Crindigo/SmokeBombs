@@ -1,25 +1,23 @@
 package com.crindigo.smokebombs;
 
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.registry.IThrowableEntity;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import java.util.List;
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.EnumMovingObjectType;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-public class EntitySmokeBomb extends Entity implements IProjectile
+import java.util.List;
+
+public class EntitySmokeBomb extends Entity implements IProjectile, IThrowableEntity
 {
     final static int DW_COLOR = 16;
 
@@ -35,7 +33,7 @@ public class EntitySmokeBomb extends Entity implements IProjectile
     /**
      * Is the entity that throws this 'thing' (snowball, ender pearl, eye of ender or potion)
      */
-    private EntityLiving thrower;
+    private Entity thrower;
     private String throwerName = null;
     private int ticksInGround;
     private int ticksInAir = 0;
@@ -180,6 +178,10 @@ public class EntitySmokeBomb extends Entity implements IProjectile
         if ( smokeLeft <= 0 ) {
             this.setDead();
         } else if ( smokeCountdown <= 0 ) {
+            if ( !this.worldObj.isRemote && smokeLeft % 5 == 0 ) {
+                this.muddleEnemies();
+            }
+
             smokeLeft--;
 
             if ( this.worldObj.isRemote ) {
@@ -203,6 +205,27 @@ public class EntitySmokeBomb extends Entity implements IProjectile
                         this.worldObj, this.posX, this.posY + 0.1, this.posZ, r, g, b));
             }
         }
+    }
+
+    private void muddleEnemies()
+    {
+        double range = SmokeBombs.BOMB_MUDDLE_RANGE;
+        final List entities = this.worldObj.getEntitiesWithinAABB(EntityLiving.class,
+                this.boundingBox.expand(range, range, range));
+
+        for ( Object item : entities ) {
+            if ( item instanceof EntityLiving && item != this.thrower ) {
+                EntityLiving entity = (EntityLiving) item;
+                if ( !entity.isPotionActive(Potion.moveSlowdown.id) ) {
+                    entity.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, smokeLeft, 2));
+                }
+            }
+        }
+    }
+
+    public boolean isEffectActive()
+    {
+        return smokeCountdown <= 0 && smokeLeft > 0;
     }
 
     /**
@@ -262,7 +285,8 @@ public class EntitySmokeBomb extends Entity implements IProjectile
         return 0.0F;
     }
 
-    public EntityLiving getThrower()
+    @Override
+    public Entity getThrower()
     {
         if (this.thrower == null && this.throwerName != null && this.throwerName.length() > 0)
         {
@@ -270,5 +294,11 @@ public class EntitySmokeBomb extends Entity implements IProjectile
         }
 
         return this.thrower;
+    }
+
+    @Override
+    public void setThrower(Entity entity)
+    {
+        this.thrower = entity;
     }
 }

@@ -1,0 +1,20 @@
+[
+{
+  "modid": "smokebombs",
+  "name": "Smoke Bombs",
+  "description": "Adds smoke bombs with 16 different colors, that impact movement of other entities.",
+  "version": "@VERSION@",
+  "url": "http://github.com/Crindigo/SmokeBombs",
+  "updateUrl": "",
+  "authorList": [
+    "Crindigo"
+  ],
+  "credits": "By Crindigo",
+  "logoFile": "",
+  "screenshots": [
+  ],
+  "parent":"",
+  "dependencies": [
+  ]
+}
+]
