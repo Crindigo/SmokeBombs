@@ -1,1 +1,7 @@
-This file was created by IntelliJ IDEA 12.1.2 for binding GitHub repository
+Smoke Bombs
+===========
+
+Craft smoke bombs of any color with gunpowder, a water bottle, sand, and dye.
+Recipe is shapeless. They can be thrown or placed into a dispenser.
+
+Mod structure loosely based on Pahimar's (which was based on KingLemming's?), but using IntelliJ IDEA.
