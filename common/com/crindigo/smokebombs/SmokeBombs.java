@@ -34,6 +34,7 @@ public class SmokeBombs
 
     static public Item smokeBomb;
 
+    static public int SMOKE_BOMB_ID;
     static public double BOMB_MUDDLE_RANGE;
 
     @SidedProxy(
@@ -46,14 +47,9 @@ public class SmokeBombs
     public void preInit(FMLPreInitializationEvent event)
     {
         loadConfiguration(event.getSuggestedConfigurationFile());
-    }
 
-    @Mod.Init
-    public void load(FMLInitializationEvent event)
-    {
         // Register the smoke bomb item
-        smokeBomb = new ItemSmokeBomb(config.getItem("smokeBomb", 5148).getInt())
-                .setUnlocalizedName("smokeBomb");
+        smokeBomb = new ItemSmokeBomb(SMOKE_BOMB_ID).setUnlocalizedName("smokeBomb");
         GameRegistry.registerItem(smokeBomb, "smokeBomb");
 
         // Register item names
@@ -63,18 +59,22 @@ public class SmokeBombs
                     String.format("Smoke Bomb (%s)", ItemSmokeBomb.colorNames[i]));
         }
 
-        // Register the smoke bomb entity
-        EntityRegistry.registerModEntity(EntitySmokeBomb.class, "entSmokeBomb", 1, this, 64, 10, true);
-
-        // needs to be after smokeBomb is set
-        proxy.registerRenderers();
-
         // Add recipes for each color of smoke bomb
         for ( int i = 0; i < ItemSmokeBomb.colorNames.length; i++ ) {
             GameRegistry.addShapelessRecipe(new ItemStack(smokeBomb, 1, i),
                     Item.gunpowder, new ItemStack(Item.potion),
                     new ItemStack(Item.dyePowder, 1, i), Block.sand);
         }
+    }
+
+    @Mod.Init
+    public void load(FMLInitializationEvent event)
+    {
+        // Register the smoke bomb entity
+        EntityRegistry.registerModEntity(EntitySmokeBomb.class, "entSmokeBomb", 1, this, 64, 10, true);
+
+        // needs to be after smokeBomb is set
+        proxy.registerRenderers();
 
         // Allow it to be dispensed
         BlockDispenser.dispenseBehaviorRegistry.putObject(smokeBomb, new DispenserBehaviorSmokeBomb());
@@ -89,6 +89,8 @@ public class SmokeBombs
     {
         config = new Configuration(file);
         config.load();
+
+        SMOKE_BOMB_ID = config.getItem("smokeBomb", 5148).getInt();
 
         Property bombEffectRadius = config.get("general", "bombEffectRadius", 3.0);
         bombEffectRadius.comment = "Radius of bounding box that affects entities";
